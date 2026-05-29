@@ -1,0 +1,120 @@
+import pygame as pg
+pg.init()  
+
+FPS = 60
+BLACK = (0, 0, 0)
+clock = pg.time.Clock()
+
+W, H = 700, 500
+
+background = pg.transform.scale(pg.image.load('galaxy.jpg'), (W, H))
+
+#создай окно игры
+window = pg.display.set_mode((W, H))
+
+
+#задай фон сцены
+window.blit(background, (0, 0))
+
+game = True
+
+class Area():
+    def __init__(self, x=0, y=0, width=10, height=10, color = None):
+        self.rect = Rect(x, y, width, height)                      
+        self.fill_color = color
+        self.spisok = []
+    
+
+class Lable(Area):
+    def __init__(self, text, x=0, y=0, width=10, height=10, bg_color = None, text_color = BLACK, fsize = 25):
+        super().__init__(x, y, width, height, bg_color)
+        self.bg_color = bg_color
+        self.set_text(text, text_color = text_color, fsize = fsize)
+        self.fsize = fsize
+        self.text_color = text_color
+
+    def draw(self, shift_x=0, shift_y=0):
+        if not self.bg_color is None:
+            draw.rect(window, self.fill_color, self.rect)
+        window.blit(self.image, (self.rect.x + shift_x, self.rect.y + shift_y))
+
+    def set_text(self, text, fsize=None, text_color=None):
+        if fsize is None:
+            fsize = self.fsize
+        if text_color is None:
+            text_color = self.text_color
+        self.text = text
+        self.image = font.Font(None, fsize).render(text, True, text_color)
+
+class Game():
+    run = True
+    finish = True
+    win = False
+    lose = False
+    sound_played = False
+    objs = []
+    
+    def update(self):
+        for i in pg.event.get():
+            if i.type == pg.QUIT:
+                self.run = False
+            for obj, f_type in self.objs:
+                if f_type == 'on_click' and obj.rect.collidepoint(x, y):
+                    obj.on_click(x,y)
+    
+        if self.finish == True:
+            player.update()
+
+            window.blit(background, (0, 0))
+            
+            player.reset()
+
+    def start(self):
+        while game.run == True:
+            self.update()
+            btn_start.draw()
+
+            display.update()
+            clock.tick(FPS)
+
+    def add_handler(self, obj):
+        if obj in self.objs:
+            self.objs.remove(obj)
+        self.objs.append(obj)
+            
+        
+
+class GameSprite(pg.sprite.Sprite):
+    def __init__(self, image_name, x, y, w, h, speed):
+        super().__init__()
+        self.image = pg.transform.scale(pg.image.load(image_name), (w, h))
+        self.speed = speed
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+    def reset(self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+class Player(GameSprite):
+    def update(self):
+        keys_pressed = pg.key.get_pressed()
+        if keys_pressed[pg.K_LEFT] and self.rect.x >= 0:
+            self.rect.x -= self.speed
+        if keys_pressed[pg.K_RIGHT] and self.rect.x <= W - self.rect.width: 
+            self.rect.x += self.speed
+
+player = Player('rocket.png', 400, 425, 50, 70, 5)
+game = Game()
+
+while game.run == True:
+
+    game.update()
+
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            game = False
+
+    pg.display.update()
+    clock.tick(FPS)
+
+    
