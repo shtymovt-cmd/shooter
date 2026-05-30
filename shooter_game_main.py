@@ -1,4 +1,5 @@
 import pygame as pg
+from random import randint
 pg.init()  
 
 FPS = 60
@@ -64,10 +65,12 @@ class Game():
     
         if self.finish == True:
             player.update()
+            enemies.update()
 
             window.blit(background, (0, 0))
             
             player.reset()
+            enemies.draw(window)
 
     def start(self):
         while game.run == True:
@@ -95,6 +98,13 @@ class GameSprite(pg.sprite.Sprite):
     def reset(self):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
+class Enemy(GameSprite):
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.y >= 450:
+            self.rect.x = randint(0, 650)
+            self.rect.y = -50
+
 class Player(GameSprite):
     def update(self):
         keys_pressed = pg.key.get_pressed()
@@ -104,7 +114,11 @@ class Player(GameSprite):
             self.rect.x += self.speed
 
 player = Player('rocket.png', 400, 425, 50, 70, 5)
+enemies = pg.sprite.Group()
+for i in range(5):
+    enemies.add(Enemy('ufo.png', randint(0, 650), -50, 50, 50, randint(1, 3)))
 game = Game()
+
 
 while game.run == True:
 
