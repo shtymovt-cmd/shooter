@@ -4,6 +4,7 @@ pg.init()
 
 FPS = 60
 BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 clock = pg.time.Clock()
 
 W, H = 700, 500
@@ -21,7 +22,7 @@ game = True
 
 class Area():
     def __init__(self, x=0, y=0, width=10, height=10, color = None):
-        self.rect = Rect(x, y, width, height)                      
+        self.rect = pg.Rect(x, y, width, height)                      
         self.fill_color = color
         self.spisok = []
     
@@ -45,7 +46,7 @@ class Lable(Area):
         if text_color is None:
             text_color = self.text_color
         self.text = text
-        self.image = font.Font(None, fsize).render(text, True, text_color)
+        self.image = pg.font.Font(None, fsize).render(text, True, text_color)
 
 class Game():
     run = True
@@ -71,6 +72,9 @@ class Game():
             
             player.reset()
             enemies.draw(window)
+
+        score_label.draw()
+        missed_label.draw()
 
     def start(self):
         while game.run == True:
@@ -101,17 +105,32 @@ class GameSprite(pg.sprite.Sprite):
 class Enemy(GameSprite):
     def update(self):
         self.rect.y += self.speed
-        if self.rect.y >= 450:
+        if self.rect.y >= H:
             self.rect.x = randint(0, 650)
             self.rect.y = -50
 
+class Bullet(GameSprite):
+    def update(self):
+        if self.rect.y <= 0 - self.rect.height:
+            #пуля уничтожается
+            pass
+
+            
+
+    
+
 class Player(GameSprite):
+    def fire(self):
+        pass
+
     def update(self):
         keys_pressed = pg.key.get_pressed()
         if keys_pressed[pg.K_LEFT] and self.rect.x >= 0:
             self.rect.x -= self.speed
         if keys_pressed[pg.K_RIGHT] and self.rect.x <= W - self.rect.width: 
             self.rect.x += self.speed
+        if keys_pressed[pg.K_SPACE]:
+            self.fire()
 
 player = Player('rocket.png', 400, 425, 50, 70, 5)
 enemies = pg.sprite.Group()
@@ -119,6 +138,8 @@ for i in range(5):
     enemies.add(Enemy('ufo.png', randint(0, 650), -50, 50, 50, randint(1, 3)))
 game = Game()
 
+score_label = Lable('счет:', 10, 10, 100, 30, text_color=WHITE, fsize=30)
+missed_label = Lable('пропущено:', 10, 50, 150, 30, text_color=WHITE, fsize=30)
 
 while game.run == True:
 
@@ -130,5 +151,3 @@ while game.run == True:
 
     pg.display.update()
     clock.tick(FPS)
-
-    
