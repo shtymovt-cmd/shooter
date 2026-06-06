@@ -67,11 +67,14 @@ class Game():
         if self.finish == True:
             player.update()
             enemies.update()
+            bullets.update()
 
             window.blit(background, (0, 0))
             
             player.reset()
             enemies.draw(window)
+            bullets.draw(window)
+            
 
         score_label.draw()
         missed_label.draw()
@@ -111,17 +114,13 @@ class Enemy(GameSprite):
 
 class Bullet(GameSprite):
     def update(self):
+        self.rect.y -= self.speed
         if self.rect.y <= 0 - self.rect.height:
-            #пуля уничтожается
-            pass
-
-            
-
-    
+            self.kill()
 
 class Player(GameSprite):
     def fire(self):
-        pass
+        bullets.add(Bullet('bullet.png', self.rect.centerx - 7, self.rect.y, 15, 30, 3))
 
     def update(self):
         keys_pressed = pg.key.get_pressed()
@@ -134,6 +133,7 @@ class Player(GameSprite):
 
 player = Player('rocket.png', 400, 425, 50, 70, 5)
 enemies = pg.sprite.Group()
+bullets = pg.sprite.Group()
 for i in range(5):
     enemies.add(Enemy('ufo.png', randint(0, 650), -50, 50, 50, randint(1, 3)))
 game = Game()
