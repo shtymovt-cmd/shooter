@@ -75,7 +75,6 @@ class Game():
             enemies.draw(window)
             bullets.draw(window)
             
-
         score_label.draw()
         missed_label.draw()
 
@@ -134,6 +133,7 @@ class Player(GameSprite):
 player = Player('rocket.png', 400, 425, 50, 70, 5)
 enemies = pg.sprite.Group()
 bullets = pg.sprite.Group()
+
 for i in range(5):
     enemies.add(Enemy('ufo.png', randint(0, 650), -50, 50, 50, randint(1, 3)))
 game = Game()
