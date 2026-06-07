@@ -77,6 +77,8 @@ class Game():
             
         score_label.draw()
         missed_label.draw()
+        score.draw()
+        missed.draw()
 
     def start(self):
         while game.run == True:
@@ -110,14 +112,20 @@ class Enemy(GameSprite):
         if self.rect.y >= H:
             self.rect.x = randint(0, 650)
             self.rect.y = -50
+            player.ms += 1
+            missed.set_text(str(player.ms))
 
 class Bullet(GameSprite):
     def update(self):
         self.rect.y -= self.speed
         if self.rect.y <= 0 - self.rect.height:
             self.kill()
+        
 
 class Player(GameSprite):
+    sc = 0
+    ms = 0
+
     def fire(self):
         bullets.add(Bullet('bullet.png', self.rect.centerx - 7, self.rect.y, 15, 30, 3))
 
@@ -140,6 +148,8 @@ game = Game()
 
 score_label = Lable('счет:', 10, 10, 100, 30, text_color=WHITE, fsize=30)
 missed_label = Lable('пропущено:', 10, 50, 150, 30, text_color=WHITE, fsize=30)
+score = Lable(str(player.sc), 120, 10, 100, 30, text_color=WHITE, fsize=30)
+missed = Lable(str(player.ms), 170, 50, 150, 30, text_color=WHITE, fsize=30)
 
 while game.run == True:
 
