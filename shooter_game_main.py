@@ -1,11 +1,16 @@
 import pygame as pg
 from random import randint
+from time import *
 pg.init()  
 
 FPS = 60
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 clock = pg.time.Clock()
+
+HP = 3
 
 W, H = 700, 500
 
@@ -50,11 +55,13 @@ class Lable(Area):
 
 class Game():
     run = True
-    finish = True
+    finish = False
     win = False
     lose = False
     sound_played = False
     objs = []
+    shooting_rate = 0.5
+
     
     def update(self):
         for i in pg.event.get():
@@ -64,21 +71,39 @@ class Game():
                 if f_type == 'on_click' and obj.rect.collidepoint(x, y):
                     obj.on_click(x,y)
     
-        if self.finish == True:
+        if self.finish == False:
             player.update()
             enemies.update()
+            asteroids.update()
             bullets.update()
 
             window.blit(background, (0, 0))
             
             player.reset()
             enemies.draw(window)
+            asteroids.draw(window)
             bullets.draw(window)
             
         score_label.draw()
         missed_label.draw()
         score.draw()
         missed.draw()
+
+        if player.sc >= 10 and player.ms < 10:
+            self.win = True
+            self.finish = True
+
+        if player.sc < 10 and player.ms >= 10:
+            self.lose = True
+            self.finish = True
+        
+
+        if self.finish == True and self.lose == True:
+            lose_text.draw()            
+
+        if self.finish == True and self.win == True:
+            win_text.draw()
+
 
     def start(self):
         while game.run == True:
@@ -115,19 +140,37 @@ class Enemy(GameSprite):
             player.ms += 1
             missed.set_text(str(player.ms))
 
+class Asteroid(GameSprite):
+    def update(self):
+        self.rect.y += self.speed
+
 class Bullet(GameSprite):
     def update(self):
         self.rect.y -= self.speed
         if self.rect.y <= 0 - self.rect.height:
             self.kill()
-        
+        sprites_list = pg.sprite.groupcollide(bullets, enemies, True, True)
+        sprites_num = len(sprites_list)
+        if sprites_num != 0:
+            player.sc += sprites_num
+            score.set_text(str(player.sc))
+            for i in range(sprites_num):
+                enemies.add(Enemy('ufo.png', randint(0, 650), -50, 50, 50, randint(1, 3)))
+            
+
 
 class Player(GameSprite):
     sc = 0
     ms = 0
+    hp = HP
+    last_bullet = time()
 
     def fire(self):
-        bullets.add(Bullet('bullet.png', self.rect.centerx - 7, self.rect.y, 15, 30, 3))
+        cur_time = time()
+        if cur_time - self.last_bullet > game.shooting_rate:
+            bullets.add(Bullet('bullet.png', self.rect.centerx - 7, self.rect.y, 15, 30, 3))
+            self.last_bullet = cur_time
+        
 
     def update(self):
         keys_pressed = pg.key.get_pressed()
@@ -137,19 +180,36 @@ class Player(GameSprite):
             self.rect.x += self.speed
         if keys_pressed[pg.K_SPACE]:
             self.fire()
+        monsters_list = pg.sprite.spritecollide(player, enemies, True)
+        asteroids_list = pg.sprite.spritecollide(player, asteroids, True)
+        if len(asteroids_list) != 0:
+            game.lose = True
+            game.finish = True
+
+        if len(monsters_list) != 0:
+            game.lose = True
+            game.finish = True
 
 player = Player('rocket.png', 400, 425, 50, 70, 5)
+
 enemies = pg.sprite.Group()
+asteroids = pg.sprite.Group()
 bullets = pg.sprite.Group()
 
 for i in range(5):
     enemies.add(Enemy('ufo.png', randint(0, 650), -50, 50, 50, randint(1, 3)))
+
+for i in range(5):
+    asteroids.add(Asteroid('asteroid.png', randint(0, 650), -50, 50, 50, randint(1, 3)))
+
 game = Game()
 
 score_label = Lable('счет:', 10, 10, 100, 30, text_color=WHITE, fsize=30)
 missed_label = Lable('пропущено:', 10, 50, 150, 30, text_color=WHITE, fsize=30)
 score = Lable(str(player.sc), 120, 10, 100, 30, text_color=WHITE, fsize=30)
 missed = Lable(str(player.ms), 170, 50, 150, 30, text_color=WHITE, fsize=30)
+lose_text = Lable('YOU LOSE', 170, 200, 100, 30, text_color=RED, fsize=100)
+win_text = Lable('YOU WON', 170, 200, 100, 30, text_color=GREEN, fsize=100)
 
 while game.run == True:
 
