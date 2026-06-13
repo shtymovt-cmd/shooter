@@ -88,6 +88,8 @@ class Game():
         missed_label.draw()
         score.draw()
         missed.draw()
+        if player.rel_on == True:
+            reload_text.draw()
 
         if player.sc >= 10 and player.ms < 10:
             self.win = True
@@ -164,12 +166,16 @@ class Player(GameSprite):
     ms = 0
     hp = HP
     last_bullet = time()
+    num_fire = 0
+    rel_on = False
+
 
     def fire(self):
         cur_time = time()
         if cur_time - self.last_bullet > game.shooting_rate:
             bullets.add(Bullet('bullet.png', self.rect.centerx - 7, self.rect.y, 15, 30, 3))
             self.last_bullet = cur_time
+            self.num_fire += 1
         
 
     def update(self):
@@ -178,13 +184,27 @@ class Player(GameSprite):
             self.rect.x -= self.speed
         if keys_pressed[pg.K_RIGHT] and self.rect.x <= W - self.rect.width: 
             self.rect.x += self.speed
-        if keys_pressed[pg.K_SPACE]:
+        if keys_pressed[pg.K_SPACE] and self.num_fire < 5:
             self.fire()
+            self.start_time = time()
+
+        if self.num_fire >= 5 and self.rel_on == False:
+            self.rel_on = True
+            self.start_time = time()
+
+        if self.rel_on == True:
+
+            cur_time = time()
+            if cur_time - self.start_time >= 3:
+                self.rel_on = False
+                self.num_fire = 0
+
         monsters_list = pg.sprite.spritecollide(player, enemies, True)
         asteroids_list = pg.sprite.spritecollide(player, asteroids, True)
         if len(asteroids_list) != 0:
             game.lose = True
             game.finish = True
+            
 
         if len(monsters_list) != 0:
             game.lose = True
@@ -210,6 +230,7 @@ score = Lable(str(player.sc), 120, 10, 100, 30, text_color=WHITE, fsize=30)
 missed = Lable(str(player.ms), 170, 50, 150, 30, text_color=WHITE, fsize=30)
 lose_text = Lable('YOU LOSE', 170, 200, 100, 30, text_color=RED, fsize=100)
 win_text = Lable('YOU WON', 170, 200, 100, 30, text_color=GREEN, fsize=100)
+reload_text = Lable('Wait, reload...', 170, 400, 100, 30, text_color=RED, fsize=30)
 
 while game.run == True:
 
